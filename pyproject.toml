@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "g-jepa"
+version = "0.1.0"
+description = "Temporal physical grounding and prior-guided planning in LeWM world models"
+requires-python = ">=3.10"
+dependencies = ["torch>=2.5,<2.6", "torchvision>=0.20,<0.21", "numpy>=1.26,<2", "einops>=0.8", "hydra-core==1.3.2", "transformers==5.4.0", "h5py>=3.11", "hdf5plugin>=5"]
+
+[tool.setuptools.packages.find]
+include = ["gjepa*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -1,0 +1,76 @@
+defaults:
+  - model: lewm
+  - _self_
+
+domain: cube
+output_dir: runs/cube/gjepa
+output_model_name: gjepa
+subdir: gjepa
+resume: false
+num_workers: 16
+train_split: 0.9
+seed: 3072
+init_seed: 3072
+train_seed: 3072
+img_size: 224
+embed_dim: 192
+history_size: 3
+num_preds: 1
+observer:
+  type: s4d
+stop_after_epochs: 10
+trainer:
+  max_epochs: 10
+  devices: 1
+  accelerator: gpu
+  precision: bf16-mixed
+  gradient_clip_val: 1.0
+  limit_train_batches: 1.0
+  limit_val_batches: 200
+  default_root_dir: ${output_dir}
+loader:
+  batch_size: 128
+  num_workers: ${num_workers}
+  persistent_workers: true
+  pin_memory: true
+optimizer:
+  type: AdamW
+  lr: 5.0e-5
+  weight_decay: 0.001
+loss:
+  lambda_state: 0.09
+  lambda_pred_state: 0.05
+  lambda_inv: 0.05
+  lambda_inv_trans: 0.0
+  pred_state_warmup_updates: 0
+  sigreg:
+    weight: 0.09
+    kwargs:
+      knots: 17
+      num_proj: 1024
+wandb:
+  enabled: false
+  config:
+    project: gjepa
+    name: ${subdir}
+    log_model: false
+hydra:
+  run:
+    dir: ${output_dir}/hydra
+  job:
+    chdir: false
+
+data:
+  dataset:
+    num_steps: 4
+    frameskip: 5
+    name: ${oc.env:GJEPA_DATA_DIR}/cube_single_expert.h5
+    keys_to_load:
+      - pixels
+      - action
+      - observation
+    keys_to_cache: []
+    keys_to_merge:
+      state: observation
+
+episode_holdout: true

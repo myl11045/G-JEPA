@@ -1,0 +1,10 @@
+gym==0.26.2
+gymnasium==1.2.3
+pymunk==6.8.0
+pygame==2.5.2
+opencv-python==4.6.0.66
+scikit-image==0.24.0
+matplotlib==3.9.2
+mujoco==3.6.0
+ogbench==1.2.1
+shapely==2.0.3

@@ -1,0 +1,12 @@
+# Python 3.11 is recommended. Install the appropriate PyTorch wheel first.
+-e .
+stable-pretraining==0.1.6
+stable-worldmodel==0.1.1
+lightning==2.6.1
+pytorch-lightning==2.6.1
+numpy==1.26.4
+scipy==1.14.1
+pandas==2.2.3
+scikit-learn==1.7.2
+wandb==0.18.7
+pytest>=8,<10

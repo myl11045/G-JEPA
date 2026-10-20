@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+.DS_Store
+*.egg-info/
+build/
+dist/
+/data/
+/runs/
+/cache/
+/checkpoints/
+/wandb/
+.env
+
+# Model artifacts are distributed separately from source.
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.h5
+*.hdf5
