@@ -182,8 +182,6 @@ G-JEPA/
 └── pyproject.toml          # Package configuration
 ```
 
-Run `pytest -q` for the CPU checks.
-
 ## Acknowledgments
 
 Our world-model implementation is based on [LeWorldModel](https://github.com/lucas-maes/le-wm), with G-JEPA's temporal physical grounding and prior-guided planning extensions. We also use [stable-pretraining](https://github.com/galilai-group/stable-pretraining) and [stable-worldmodel](https://github.com/galilai-group/stable-worldmodel). The included PushT simulator is adapted from [DINO-WM](https://github.com/gaoyuezhou/dino_wm). Original copyright and license notices are retained in the root [LICENSE](LICENSE).
