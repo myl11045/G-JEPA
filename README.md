@@ -15,6 +15,8 @@ This codebase is developed from [LeWorldModel (LeWM)](https://github.com/lucas-m
 Use Python 3.11 or 3.12. A CUDA GPU is recommended for training.
 
 ```bash
+git clone https://github.com/myl11045/G-JEPA.git
+cd G-JEPA
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu121
@@ -38,7 +40,7 @@ export GJEPA_DATA_DIR=/path/to/datasets
 ```
 
 ```text
-datasets/
+$GJEPA_DATA_DIR/
 ├── pusht_expert_train.h5
 ├── cube_single_expert.h5
 └── tworoom.h5
@@ -70,7 +72,7 @@ The temporal module is implemented in [`gjepa/s4d.py`](gjepa/s4d.py): `S4DLayer`
 
 ## Action-prior training
 
-First cache latent representations using the frozen world model:
+After world-model training, cache its frozen latent representations:
 
 ```bash
 python cache_latents.py --domain pusht \
@@ -81,9 +83,28 @@ python cache_latents.py --domain pusht \
 python train_prior.py --cache cache/pusht --output runs/pusht/prior
 ```
 
-For Cube, use `--domain cube`, `cube_single_expert.h5`, and the corresponding world-model weights. The cache reads the saved training split and action scaler.
+For Cube, use `--domain cube`, `cube_single_expert.h5`, and `runs/cube/world/weights_epoch_10.pt`, with `cache/cube` and `runs/cube/prior` as output directories.
 
 The action prior conditions on the current latent, goal latent, and their difference. This implementation uses a diffusion model to generate 25 actions. Training settings such as `--epochs` and `--batch` can be changed through the command line.
+
+## Loading models
+
+Download pretrained PushT and OGBench Cube models from [Hugging Face](https://huggingface.co/myl11045/G-JEPA):
+
+```bash
+pip install -U huggingface_hub
+hf download myl11045/G-JEPA --local-dir weights
+```
+
+```python
+from gjepa.io import load_world, load_prior
+
+world_path = "weights/pusht/world.pt"
+world = load_world(world_path, device="cuda")
+prior = load_prior("weights/pusht/prior.pt", device="cuda", world_path=world_path)
+```
+
+Replace `pusht` with `cube` to load the Cube model.
 
 ## Planning example
 
@@ -127,44 +148,38 @@ python plot_rollout.py runs/pusht/mixed \
 
 For OGBench Cube, use `--domain cube` with the Cube dataset and weights.
 
-## Loading models
-
-Download pretrained PushT and OGBench Cube models from [Hugging Face](https://huggingface.co/myl11045/G-JEPA):
-
-```bash
-pip install -U huggingface_hub
-hf download myl11045/G-JEPA --local-dir weights
-```
-
-```python
-from gjepa.io import load_world, load_prior
-
-world_path = "weights/pusht/world.pt"
-world = load_world(world_path, device="cuda")
-prior = load_prior("weights/pusht/prior.pt", device="cuda", world_path=world_path)
-```
-
-Replace `pusht` with `cube` to load the Cube model.
-
 ## Code structure
 
+Main files and directories:
+
 ```text
-gjepa/s4d.py           S4D layers and shared physical-state decoder
-gjepa/world_model.py   LeWM-based world model
-gjepa/action_prior.py  Conditional action prior
-gjepa/planning.py      Mixed-proposal CEM and latent rollout
-gjepa/control.py       Image-conditioned planning interface
-gjepa/simulation.py    Closed-loop control and simulator adapters
-gjepa/envs/            PushT environment
-configs/train/         Training configurations
-train.py               World-model training
-cache_latents.py       Frozen latent extraction
-train_prior.py         Action-prior training
-plan.py                Single-round planning example
-simulate.py            PushT / Cube simulator execution
-plot_rollout.py        Trajectory figures, goal errors, and GIF export
-assets/                Overview and planning examples
-tests/                 Core module and training-entry checks
+G-JEPA/
+├── configs/train/          # Training configurations
+├── gjepa/                  # Python package
+│   ├── s4d.py              # Temporal physical grounding
+│   ├── world_model.py      # LeWM-based world model
+│   ├── backbone.py         # Visual encoder
+│   ├── modules.py          # Predictor and shared network layers
+│   ├── invariance.py       # Appearance augmentation and invariance loss
+│   ├── action_prior.py     # Conditional action prior
+│   ├── planning.py         # CEM search and latent rollout
+│   ├── control.py          # Image-conditioned planning interface
+│   ├── simulation.py       # PushT / Cube simulator adapters
+│   ├── io.py               # Model loading and image preprocessing
+│   ├── training/           # World-model training for each task
+│   ├── data/               # Cube and TwoRooms data utilities
+│   └── envs/               # PushT environment
+├── train.py                # World-model training entry point
+├── cache_latents.py        # Frozen latent extraction
+├── train_prior.py          # Action-prior training
+├── plan.py                 # Single-round planning
+├── simulate.py             # Closed-loop simulation
+├── plot_rollout.py         # Figures and GIF export
+├── assets/                 # Overview and planning examples
+├── tests/                  # Core module and entry-point checks
+├── requirements.txt        # Core dependencies
+├── requirements-sim.txt    # Simulation and plotting dependencies
+└── pyproject.toml          # Package configuration
 ```
 
 Run `pytest -q` for the CPU checks.
