@@ -23,6 +23,12 @@ pip install -r requirements.txt
 
 Choose the appropriate PyTorch wheel for your CUDA version. For CPU use, install the corresponding CPU wheel. Run the commands below from the repository root.
 
+For simulation and visualization, install the optional dependencies:
+
+```bash
+pip install -r requirements-sim.txt
+```
+
 ## Data
 
 Download the image-based HDF5 datasets linked in [LeWorldModel](https://github.com/lucas-maes/le-wm#data) and set their location:
@@ -81,13 +87,13 @@ The action prior conditions on the current latent, goal latent, and their differ
 
 ## Planning example
 
-Generate a plan from two frames in a dataset episode:
+Generate a plan from two frames in a dataset episode using the [pretrained weights](#loading-models):
 
 ```bash
 python plan.py --domain pusht \
   --data "$GJEPA_DATA_DIR/pusht_expert_train.h5" \
-  --world runs/pusht/world/weights_epoch_20.pt \
-  --prior runs/pusht/prior/best.pt \
+  --world weights/pusht/world.pt \
+  --prior weights/pusht/prior.pt \
   --episode 0 --start 0 --goal-offset 25 \
   --output runs/pusht/plan.json
 ```
@@ -98,43 +104,32 @@ The example mixes learned proposals with Gaussian candidates, scores them with t
 
 ## Simulation and visualization
 
-Install the optional simulator and plotting dependencies:
+![Example planning rollouts on PushT and OGBench Cube](assets/GJEPA_execution.png)
 
-```bash
-pip install -r requirements-sim.txt
-```
+[View the example in PDF format](assets/GJEPA_execution.pdf)
 
-Run a closed-loop PushT example. Each plan contains 25 actions; this example executes the first five before replanning:
+Run closed-loop PushT planning with the [pretrained weights](#loading-models) and save the rollout:
 
 ```bash
 python simulate.py --domain pusht \
   --data "$GJEPA_DATA_DIR/pusht_expert_train.h5" \
-  --world runs/pusht/world/weights_epoch_20.pt \
-  --prior runs/pusht/prior/best.pt \
-  --episode 0 --start 0 --goal-offset 25 \
-  --execute 5 --max-steps 100 --stop-on-success \
-  --output runs/pusht/mixed
+  --world weights/pusht/world.pt \
+  --prior weights/pusht/prior.pt \
+  --stop-on-success --output runs/pusht/mixed
+```
 
+Export trajectory figures, goal-error curves, and a GIF:
+
+```bash
 python plot_rollout.py runs/pusht/mixed \
   --snapshots 4 --gif --output runs/pusht/figures
 ```
 
-For Cube, use `--domain cube`, `cube_single_expert.h5`, and the Cube world/prior weights. The HDF5 file must include `qpos`, `qvel`, `privileged_block_0_pos`, and `privileged_block_0_quat`. Use `MUJOCO_GL=egl` on a headless Linux machine or `MUJOCO_GL=glfw` on macOS; the simulator selects these defaults automatically.
-
-`--mode cem` runs Gaussian CEM without a prior. `--mode direct` executes a sampled prior sequence without world-model scoring. Run these modes with the same episode, start, and goal, using separate output directories, to compare them:
-
-```bash
-python plot_rollout.py runs/pusht/cem runs/pusht/direct runs/pusht/mixed \
-  --snapshots 4 --output runs/pusht/comparison
-```
-
-Simulation saves `rollout.npz` with executed frames, actions, physical states, and per-step goal errors, plus `summary.json`. Plotting exports trajectory strips and goal-error curves in PNG and editable SVG; `--gif` also exports observation/goal animations. PushT figures draw the recorded physical states with the actual task goal. Use `--rgb` to display original observations, whose green background marker is fixed rather than the task-specific goal.
-
-These are configurable single-task examples. Planning uses terminal latent cost by default; `--cost pusht` enables the PushT staged weighting schedule. `--execute` and `--max-steps` control the execution budget. The examples do not run the paper's full evaluation protocol.
+For OGBench Cube, use `--domain cube` with the Cube dataset and weights.
 
 ## Loading models
 
-Pretrained PushT and OGBench Cube weights are available on [Hugging Face](https://huggingface.co/myl11045/G-JEPA). Each task folder contains a world model, its matching action prior, and the required configuration and action normalization files.
+Download pretrained PushT and OGBench Cube models from [Hugging Face](https://huggingface.co/myl11045/G-JEPA):
 
 ```bash
 pip install -U huggingface_hub
@@ -149,9 +144,7 @@ world = load_world(world_path, device="cuda")
 prior = load_prior("weights/pusht/prior.pt", device="cuda", world_path=world_path)
 ```
 
-Replace `pusht` with `cube` for OGBench Cube. To use these weights in the planning or simulation examples above, set `--world weights/pusht/world.pt --prior weights/pusht/prior.pt` (or the corresponding Cube paths).
-
-Keep `config.json` and `action_scaler.json` beside the world-model weights. The prior includes its latent normalization statistics and checks compatibility with the world model. These are inference weights; optimizer state and intermediate checkpoints are not included.
+Replace `pusht` with `cube` to load the Cube model.
 
 ## Code structure
 
@@ -170,7 +163,7 @@ train_prior.py         Action-prior training
 plan.py                Single-round planning example
 simulate.py            PushT / Cube simulator execution
 plot_rollout.py        Trajectory figures, goal errors, and GIF export
-assets/                Paper overview
+assets/                Overview and planning examples
 tests/                 Core module and training-entry checks
 ```
 
