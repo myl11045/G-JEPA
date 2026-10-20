@@ -134,17 +134,24 @@ These are configurable single-task examples. Planning uses terminal latent cost 
 
 ## Loading models
 
+Pretrained PushT and OGBench Cube weights are available on [Hugging Face](https://huggingface.co/myl11045/G-JEPA). Each task folder contains a world model, its matching action prior, and the required configuration and action normalization files.
+
+```bash
+pip install -U huggingface_hub
+hf download myl11045/G-JEPA --local-dir weights
+```
+
 ```python
 from gjepa.io import load_world, load_prior
 
-world_path = "runs/pusht/world/weights_epoch_20.pt"
+world_path = "weights/pusht/world.pt"
 world = load_world(world_path, device="cuda")
-prior = load_prior("runs/pusht/prior/best.pt", device="cuda", world_path=world_path)
+prior = load_prior("weights/pusht/prior.pt", device="cuda", world_path=world_path)
 ```
 
-Keep `config.json` and `action_scaler.json` beside the world-model weights. The prior includes its latent normalization statistics and checks compatibility with the world model.
+Replace `pusht` with `cube` for OGBench Cube. To use these weights in the planning or simulation examples above, set `--world weights/pusht/world.pt --prior weights/pusht/prior.pt` (or the corresponding Cube paths).
 
-Weights are not included in this source repository. Pretrained inference weights can be distributed separately through Hugging Face or GitHub Releases. No public download link is available yet.
+Keep `config.json` and `action_scaler.json` beside the world-model weights. The prior includes its latent normalization statistics and checks compatibility with the world model. These are inference weights; optimizer state and intermediate checkpoints are not included.
 
 ## Code structure
 
