@@ -23,8 +23,6 @@ pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorc
 pip install -r requirements.txt
 ```
 
-Choose the appropriate PyTorch wheel for your CUDA version. For CPU use, install the corresponding CPU wheel. Run the commands below from the repository root.
-
 For simulation and visualization, install the optional dependencies:
 
 ```bash
