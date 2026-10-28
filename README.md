@@ -8,8 +8,6 @@ This codebase is developed from [LeWorldModel (LeWM)](https://github.com/lucas-m
 
 ![G-JEPA overview](assets/overview.png)
 
-[Overview in PDF format](assets/overview.pdf)
-
 ## Installation
 
 Use Python 3.11 or 3.12. A CUDA GPU is recommended for training.
@@ -124,8 +122,6 @@ The example mixes learned proposals with Gaussian candidates, scores them with t
 ## Simulation and visualization
 
 ![Example planning rollouts on PushT and OGBench Cube](assets/GJEPA_execution.png)
-
-[View the example in PDF format](assets/GJEPA_execution.pdf)
 
 Run closed-loop PushT planning with the [pretrained weights](#loading-models) and save the rollout:
 
